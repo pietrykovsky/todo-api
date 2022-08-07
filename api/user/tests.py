@@ -13,7 +13,7 @@ class UserModelTest(TestCase):
         username='testuser'
         email='test@example.com'
         password='testpass123'
-        user = create_user()
+        user = create_user(username, email, password)
 
         self.assertEqual(user.username, username)
         self.assertEqual(user.email, email)
