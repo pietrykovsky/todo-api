@@ -1,8 +1,16 @@
 FROM python:3
+
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-WORKDIR /code
-COPY requirements.txt /code/
-RUN pip install -r requirements.txt
-COPY ./api/ /code/
-WORKDIR /code/api
+
+COPY requirements.txt /api/requirements.txt
+COPY ./api /api
+WORKDIR /api
+
+RUN pip install -r requirements.txt && \
+    adduser --disabled-password --no-create-home django-user && \
+    chown -R django-user:django-user /api && \
+    chmod -R 755 /api && \
+    git clone https://github.com/vishnubob/wait-for-it.git
+
+USER django-user
