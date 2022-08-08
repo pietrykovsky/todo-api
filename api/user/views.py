@@ -4,8 +4,14 @@ from rest_framework.response import Response
 
 from django.contrib.auth import get_user_model
 
+from drf_spectacular.utils import extend_schema
+
 from .serializers import UserSerializer
 
+@extend_schema(
+    request = UserSerializer,
+    responses = UserSerializer
+)
 @api_view(['POST'])
 def create_user_view(request):
     """Create a new user view."""
