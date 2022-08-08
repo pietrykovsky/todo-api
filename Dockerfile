@@ -10,7 +10,6 @@ WORKDIR /api
 RUN pip install -r requirements.txt && \
     adduser --disabled-password --no-create-home django-user && \
     chown -R django-user:django-user /api && \
-    chmod -R 755 /api && \
-    git clone https://github.com/vishnubob/wait-for-it.git
+    chmod -R 755 /api
 
 USER django-user
