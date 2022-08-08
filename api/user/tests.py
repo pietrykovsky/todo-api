@@ -7,6 +7,7 @@ from rest_framework.test import APIClient, force_authenticate
 
 CREATE_USER_URL = reverse('user:create')
 TOKEN_URL = reverse('user:token')
+PROFILE_URL = reverse('user:profile')
 
 def create_user(username='testusername', email='test@example.com', password='testpass123'):
     """Create and return a user."""
@@ -126,3 +127,34 @@ class PublicUserApiTests(TestCase):
 
         self.assertNotIn('token', response.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+class PrivateUserApiTests(TestCase):
+    """Test private user api."""
+
+    def setUp(self):
+        self.user = create_user()
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def test_retrieve_profile_success(self):
+        """Test retrieving user profile for logged in user."""
+        response = self.client.get(PROFILE_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('username', response.data)
+        self.assertIn('email', response.data)
+
+    def test_update_user_profile(self):
+        """Test updating the user profile for the authenticated user."""
+        payload = {
+            'username': 'updatedusername',
+            'email': 'updated@example.com',
+            'password': 'updatedpassword123'
+        }
+        response = self.client.put(PROFILE_URL, payload)
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.username, payload['username'])
+        self.assertEqual(self.user.email, payload['email'])
+        self.assertTrue(self.user.check_password(payload['password']))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
