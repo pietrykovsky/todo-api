@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.test import APIClient, force_authenticate
 
 from .models import Task
-from .serializer import TaskSerializer
+from .serializers import TaskSerializer
 
 TASKS_URL = reverse('task:task-list')
 
@@ -58,7 +58,7 @@ class PublicTaskApiTests(TestCase):
         response = self.client.post(TASKS_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        exists = Task.objects.get(title=payload['title']).exists()
+        exists = Task.objects.filter(title=payload['title']).exists()
         self.assertFalse(exists)
 
 class PrivateTaskApiTests(TestCase):
