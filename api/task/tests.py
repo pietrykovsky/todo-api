@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.test import APIClient, force_authenticate
 
 from .models import Task
-from .serializers import TaskSerializer
+from .serializers import TaskSerializer, TaskDetailSerializer
 
 TASKS_URL = reverse('task:task-list')
 
@@ -49,11 +49,9 @@ class PublicTaskApiTests(TestCase):
 
     def test_create_task_without_auth(self):
         """Test create a task without being logged in throws an error."""
-        user = create_user()
         payload = {
             'title': 'test title',
-            'description': 'test description',
-            'user': user,
+            'description': 'test description'
         }
         response = self.client.post(TASKS_URL, payload)
 
@@ -83,10 +81,36 @@ class PrivateTaskApiTests(TestCase):
     def test_task_list_limited_to_user(self):
         """Test task list is limited to owner."""
         other_user = create_user(username='anotheruser', email='another@example.com')
-        create_task(title='test1', user=other_user)
-        task = create_task(title='test2', user=self.user)
+        create_task(title='another task', user=other_user)
+        create_task(title='self task', user=self.user)
         response = self.client.get(TASKS_URL)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        serializer = TaskSerializer(task)
-        self.assertEqual(response.data, serializer.data)
+        tasks = Task.objects.filter(user=self.user)
+        serializer = TaskSerializer(tasks, many=True)
+        self.assertEqual(serializer.data, response.data)
+
+    def test_create_task(self):
+        """Test create a task."""
+        payload = {
+            'title': 'test title', 
+            'description': 'test description'
+        }
+        response = self.client.post(TASKS_URL, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        task = Task.objects.get(id=response.data['id'])
+        for k, v in payload.items():
+            self.assertEqual(getattr(task, k), v)
+        self.assertEqual(task.user, self.user)
+
+    def test_retrieve_task_detail_success(self):
+        """Test retrieve task detail is successful."""
+        create_task(user=self.user)
+        task = create_task(user=self.user)
+        serializer = TaskDetailSerializer(task)
+        response = self.client.get(detail_task(task.id))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(serializer.data, response.data)

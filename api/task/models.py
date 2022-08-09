@@ -4,7 +4,7 @@ from django.conf import settings
 
 class Task(models.Model):
     """Task model."""
-    title = models.CharField(max_length=150, unique=True)
+    title = models.CharField(max_length=150)
     description = models.TextField(blank=True)
     is_completed = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)

@@ -9,3 +9,10 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = ['id', 'title','is_completed']
         read_only_fields = ['id']
+
+class TaskDetailSerializer(TaskSerializer):
+    """Detailed serializer for tasks."""
+
+    class Meta(TaskSerializer.Meta):
+        fields = TaskSerializer.Meta.fields + ['description', 'created']
+        read_only_fields = TaskSerializer.Meta.read_only_fields + ['created']
