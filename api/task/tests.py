@@ -114,3 +114,26 @@ class PrivateTaskApiTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(serializer.data, response.data)
+
+    def test_update_task_success(self):
+        """Test edit task is successful."""
+        task = create_task(title='test task', description='test description', user=self.user)
+        payload = {
+            'title': 'updated title', 
+            'description': 'updated description'
+        }
+        response = self.client.patch(detail_task(task.id), payload)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        task.refresh_from_db()
+        self.assertEqual(task.title, payload['title'])
+        self.assertEqual(task.description, payload['description'])
+
+    def test_task_delete_success(self):
+        """Test delete task is successful."""
+        task = create_task(user=self.user)
+        response = self.client.delete(detail_task(task.id))
+        
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        exists = Task.objects.filter(id=task.id).exists()
+        self.assertFalse(exists)
